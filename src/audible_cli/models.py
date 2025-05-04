@@ -82,26 +82,38 @@ class BaseItem:
 
         return slug_title
 
-    def create_base_filename(self, mode: str):
-        supported_modes = ("ascii", "asin_ascii", "unicode", "asin_unicode")
+    def create_base_filename(self, mode: str, max_length: int = 230) -> str:
+        supported_modes = ("ascii", "asin_ascii", "unicode", "asin_only", "asin_unicode")
         if mode not in supported_modes:
             raise AudibleCliException(
                 f"Unsupported mode {mode} for name creation"
             )
-
+        
         if "ascii" in mode:
             base_filename = self.full_title_slugify
 
         elif "unicode" in mode:
             base_filename = unicodedata.normalize("NFKD", self.full_title or "")
-
         else:
-            base_filename = self.asin
+            base_filename = ""
 
         if "asin" in mode:
-            base_filename = self.asin + "_" + base_filename
 
-        return base_filename
+            if mode == "asin_only":
+                base_filename = self.asin
+            else:
+                base_filename = self.asin + "_" + base_filename
+
+        # most filesystems are limited to byte numbers, not chars.
+        # UTF-8 characters might need up to 4 bytes (think chinese characters)
+        encoded = base_filename.encode("utf-8")
+
+        # limiting 230 bytes, so that a suffix (e.g. -annotations.json) can be added easily
+        limited_bytes = encoded[:max_length]
+        print(f"this is base_filename: {base_filename}")
+        print(f"this is is limited bytes: {limited_bytes.decode("utf-8", errors="ignore")}")
+        print(f"this is the mode {mode}")
+        return limited_bytes.decode("utf-8", errors="ignore")
 
     def substring_in_title_accuracy(self, substring):
         match = LongestSubString(substring, self.full_title)
