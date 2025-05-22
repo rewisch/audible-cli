@@ -110,9 +110,6 @@ class BaseItem:
 
         # limiting 230 bytes, so that a suffix (e.g. -annotations.json) can be added easily
         limited_bytes = encoded[:max_length]
-        print(f"this is base_filename: {base_filename}")
-        print(f"this is is limited bytes: {limited_bytes.decode("utf-8", errors="ignore")}")
-        print(f"this is the mode {mode}")
         return limited_bytes.decode("utf-8", errors="ignore")
 
     def substring_in_title_accuracy(self, substring):
